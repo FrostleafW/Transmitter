@@ -60,6 +60,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 		break;
 
 	case WM_DESTROY:
+		WSACleanup();
 		PostQuitMessage(0);
 		break;
 	}
