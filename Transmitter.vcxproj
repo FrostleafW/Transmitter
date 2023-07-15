@@ -130,6 +130,7 @@
     <ClCompile Include="src\Transmitter.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\socket.h" />
     <ClInclude Include="src\Transmitter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

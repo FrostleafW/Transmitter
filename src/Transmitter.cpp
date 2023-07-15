@@ -1,4 +1,3 @@
-#include <Windows.h>
 #include "Transmitter.h"
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -44,20 +43,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 }
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
-	HDC hdc;
 	PAINTSTRUCT ps;
 
 	switch (message) {
 	case WM_CREATE:
-		createWidges(hwnd);
+		createWidgets(hwnd);
 		break;
 
 	case WM_COMMAND:
-		callbackWidges(hwnd, LOWORD(wParam));
+		callbackWidgets(hwnd, LOWORD(wParam));
 		break;
 
 	case WM_PAINT:
-		hdc = BeginPaint(hwnd, &ps);
+		BeginPaint(hwnd, &ps);
 		EndPaint(hwnd, &ps);
 		break;
 
