@@ -29,5 +29,8 @@
     <ClInclude Include="src\misc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\encryption.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

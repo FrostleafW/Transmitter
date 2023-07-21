@@ -4,11 +4,12 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nShowCmd)
 {
+	//AllocConsole();
+	//freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
+
 	// Register window class
 	const wchar_t Class_Name[] = L"Transmitter";
 	const wchar_t App_Name[] = L"Transmitter";
-	const unsigned int W_height = 600;
-	const unsigned int W_width = 800;
 
 	WNDCLASS wc;
 	wc.style = CS_HREDRAW | CS_VREDRAW;
@@ -28,7 +29,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	}
 
 	// Create window
-	HWND hwnd = CreateWindowEx(0, Class_Name, App_Name, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME, (GetSystemMetrics(0) - W_width) / 2, (GetSystemMetrics(1) - W_height) / 2, W_width, W_height, NULL, NULL, hInstance, NULL);
+	HWND hwnd = CreateWindowEx(0, Class_Name, App_Name, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME, (GetSystemMetrics(0) - Win_WIDTH) / 2, (GetSystemMetrics(1) - Win_HEIGHT) / 2, Win_WIDTH, Win_HEIGHT, NULL, NULL, hInstance, NULL);
 	ShowWindow(hwnd, nShowCmd);
 
 	// Run message loop
@@ -60,7 +61,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 		break;
 
 	case WM_DESTROY:
+		closesocket(CONNECTION);
 		WSACleanup();
+		BCryptDestroyKey(G_hwnd_key);
+		BCryptCloseAlgorithmProvider(G_hwnd_alg, NULL);
 		PostQuitMessage(0);
 		break;
 	}
