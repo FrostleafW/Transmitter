@@ -4,8 +4,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nShowCmd)
 {
-	//AllocConsole();
-	//freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
+	AllocConsole();
+	freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
 
 	// Register window class
 	const wchar_t Class_Name[] = L"Transmitter";

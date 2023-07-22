@@ -18,13 +18,18 @@ void createWidgets(HWND hwnd) {
 	HWND BTN_CLNT = CreateWindowW(TEXT("BUTTON"), TEXT("Connect"), WS_CHILD | WS_VISIBLE | ES_CENTER, Win_WIDTH - 130, 15, 100, 40, hwnd, (HMENU)BTN_CLNT_ID, GetModuleHandle(NULL), NULL);
 	HWND TEXTBOX = CreateWindowW(TEXT("EDIT"), NULL, WS_BORDER | WS_CHILD | WS_VISIBLE | ES_LEFT | ES_MULTILINE | WS_VSCROLL | ES_AUTOVSCROLL, 5, Win_HEIGHT - 135, Win_WIDTH - 150, 90, hwnd, (HMENU)TEXTBOX_ID, GetModuleHandle(NULL), NULL);
 	HWND BTN_SEND = CreateWindowW(TEXT("BUTTON"), TEXT("Send"), WS_CHILD | WS_VISIBLE | ES_CENTER, Win_WIDTH - 130, Win_HEIGHT - 110, 100, 40, hwnd, (HMENU)BTN_SEND_ID, GetModuleHandle(NULL), NULL);
+	HWND IPBOX = CreateWindowW(TEXT("EDIT"), TEXT("IP"), WS_BORDER | WS_CHILD | WS_VISIBLE | ES_LEFT | ES_AUTOHSCROLL, Win_WIDTH - 140, 60, 120, 24, hwnd, (HMENU)IPBOX_ID, GetModuleHandle(NULL), NULL);
+	HWND PORTBOX = CreateWindowW(TEXT("EDIT"), TEXT("PORT"), WS_BORDER | WS_CHILD | WS_VISIBLE | ES_LEFT | ES_AUTOHSCROLL | ES_NUMBER, Win_WIDTH - 140, 90, 120, 24, hwnd, (HMENU)PORTBOX_ID, GetModuleHandle(NULL), NULL);
 
 	// Set fonts
 	HFONT TextFont = CreateFontW(22, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Arial");
+	HFONT TextFontSmall = CreateFontW(18, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Arial");
 	SendMessageW(MSGBOX, WM_SETFONT, (WPARAM)TextFont, TRUE);
 	SendMessageW(TEXTBOX, WM_SETFONT, (WPARAM)TextFont, TRUE);
 	SendMessageW(BTN_CLNT, WM_SETFONT, (WPARAM)TextFont, TRUE);
 	SendMessageW(BTN_SEND, WM_SETFONT, (WPARAM)TextFont, TRUE);
+	SendMessageW(IPBOX, WM_SETFONT, (WPARAM)TextFontSmall, TRUE);
+	SendMessageW(PORTBOX, WM_SETFONT, (WPARAM)TextFontSmall, TRUE);
 
 	SendMessageW(MSGBOX, EM_SETREADONLY, TRUE, NULL);
 	SendMessageW(TEXTBOX, EM_SETLIMITTEXT, (WPARAM)MAX_TEXT, NULL);
@@ -50,7 +55,6 @@ void callbackWidgets(HWND hwnd, int id) {
 	{
 		// Connect Btn
 		EnableWindow(GetDlgItem(hwnd, BTN_CLNT_ID), false);
-		appendTextW(hwnd_msg, L"\r\nTry connecting to ");
 		SOCKET ServerSocket = Client(hwnd);
 		if (ServerSocket == INVALID_SOCKET) {
 			appendTextW(hwnd_msg, L"Connection failed!");

@@ -120,21 +120,28 @@ void Connection(SOCKET sock, HWND hwnd) {
 SOCKET Client(HWND hwnd) {
 	// Get ip address
 	HWND hwnd_msg = GetDlgItem(hwnd, MSGBOX_ID);
-	wchar_t ipW[MAX_TEXT] = { 0 };
-	char ip[MAX_TEXT] = { 0 };
-	getText(hwnd, ipW);
-	if (ipW[0] == 0)
-		memcpy(ipW, L"127.0.0.1", 20);
-	appendTextW(hwnd_msg, ipW);
+	wchar_t ip[MAX_TEXT] = { 0 };
+	u_long port;
+	int len;
+
+	appendTextW(hwnd_msg, L"\r\nTry connecting to ");
+	len = getIP(hwnd, ip);
+	if (len < 7)
+		memcpy(ip, L"127.0.0.1", 20);
+	port = getPort(hwnd);
+	if (port == 0)
+		port = DEFAULT_PORT;
+	appendTextW(hwnd_msg, ip);
+	appendTextW(hwnd_msg, L":");
+	appendNumber(hwnd_msg, port);
 	appendTextW(hwnd_msg, L"...");
-	wcstombs_s(NULL, ip, ipW, sizeof(ip) - 1);
 
 	// Set up socket
 	SOCKET ClientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	SOCKADDR_IN addrServ;
-	inet_pton(AF_INET, (PCSTR)ip, &addrServ.sin_addr);
+	InetPtonW(AF_INET, (PCWSTR)ip, &addrServ.sin_addr);
 	addrServ.sin_family = AF_INET;
-	addrServ.sin_port = htons(DEFAULT_PORT);
+	addrServ.sin_port = htonl(port);
 
 	// Send request to server
 	if (connect(ClientSocket, (SOCKADDR*)&addrServ, sizeof(SOCKADDR)) == 0)
