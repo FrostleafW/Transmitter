@@ -58,7 +58,7 @@ void callbackWidgets(HWND hwnd, int id) {
 			break;
 		}
 		appendTextW(hwnd_msg, L"Succeeded!");
-		std::thread conn(Connection, ServerSocket, hwnd_msg);
+		std::thread conn(Connection, ServerSocket, hwnd);
 		conn.detach();
 		break;
 	}
@@ -73,7 +73,7 @@ void callbackWidgets(HWND hwnd, int id) {
 				break;
 			int len = AES_encrypt(G_hwnd_key, (BYTE*)text, text_len * 2, cipher, sizeof(cipher));
 			send(CONNECTION, (char*)cipher, len, 0);
-			appendTextW(hwnd_msg, L"\r\n> ");
+			appendTextW(hwnd_msg, L"\r\n< ");
 			appendTextW(hwnd_msg, text);
 		}
 		break;

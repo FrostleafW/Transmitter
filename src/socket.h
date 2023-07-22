@@ -6,7 +6,8 @@ SOCKET CONNECTION = INVALID_SOCKET;
 BCRYPT_ALG_HANDLE G_hwnd_alg = NULL;
 BCRYPT_KEY_HANDLE G_hwnd_key = NULL;
 
-void Connection(SOCKET sock, HWND hwnd_msg) {
+void Connection(SOCKET sock, HWND hwnd) {
+	HWND hwnd_msg = GetDlgItem(hwnd, MSGBOX_ID);
 	// Wait until notified
 	appendTextW(hwnd_msg, L"\r\nWaiting to start communication...");
 	int _s;
