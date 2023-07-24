@@ -219,7 +219,7 @@ void fileTransfer(HWND hwnd) {
 		send(sock, (char*)cipher, sizeof(cipher), 0);
 
 		count++;
-		if (count % 1025 == 0)
+		if (count % (MAX_TEXT_W * 2 + 1) == 0)
 			appendTextW(hwnd_msg, L"#");
 
 	} while (byteread == sizeof(data));
