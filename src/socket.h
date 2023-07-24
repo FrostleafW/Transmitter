@@ -218,9 +218,9 @@ void fileTransfer(HWND hwnd) {
 		AES_encrypt(G_hwnd_key, data, sizeof(data), cipher, sizeof(cipher));
 		send(sock, (char*)cipher, sizeof(cipher), 0);
 
+		count++;
 		if (count % 1025 == 0)
 			appendTextW(hwnd_msg, L"#");
-		count++;
 
 	} while (byteread == sizeof(data));
 

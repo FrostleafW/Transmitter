@@ -59,9 +59,9 @@ void Recv_file(HWND& hwnd, FileInfo* file_info) {
 		else
 			WriteFile(file, data, sizeof(data), NULL, NULL);
 
+		count++;
 		if (count % 1025 == 0)
 			appendTextW(hwnd_msg, L"#");
-		count++;
 	}
 	appendTextW(hwnd_msg, L"\r\n!!!Done transfer.");
 
