@@ -146,8 +146,6 @@ void Connection(SOCKET sock, HWND hwnd) {
 	EnableWindow(GetDlgItem(hwnd, BTN_CLNT_ID), true);
 }
 
-
-
 void fileTransfer(HWND hwnd) {
 	// Select file
 	OPENFILENAMEW ofn;
