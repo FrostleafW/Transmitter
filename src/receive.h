@@ -57,12 +57,10 @@ void Recv_file(HWND& hwnd, FileInfo* file_info) {
 		}
 
 		// Manage AES padding
-		if (i > file_info->filesize - (MAX_TEXT_W * 2 - 1)) {
-			int lastbyte = file_info->filesize - i;
-			WriteFile(file, data, lastbyte, NULL, NULL);
-		}
-		else
-			WriteFile(file, data, sizeof(data), NULL, NULL);
+		int lastbyte = sizeof(data);
+		if (i > file_info->filesize - (MAX_TEXT_W * 2 - 1))
+			lastbyte = file_info->filesize - i;
+		WriteFile(file, data, lastbyte, NULL, NULL);
 
 		count++;
 		if (count % (MAX_TEXT_W * 2 + 1) == 0)
