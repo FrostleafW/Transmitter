@@ -63,7 +63,7 @@ void Recv_file(HWND& hwnd, FileInfo* file_info) {
 		if (count % (MAX_TEXT_W * 2 + 1) == 0)
 			appendTextW(hwnd_msg, L"#");
 	}
-	appendTextW(hwnd_msg, L"\r\n!!!Done transfer.");
+	appendTextW(hwnd_msg, L"\r\n!!!Done transfer!");
 
 	// Close handle
 	CloseHandle(file);

@@ -224,7 +224,7 @@ void fileTransfer(HWND hwnd) {
 
 	} while (byteread == sizeof(data));
 
-	appendTextW(hwnd_msg, L"\r\n!!!Done transfer.");
+	appendTextW(hwnd_msg, L"\r\n!!!Done transfer!");
 
 	// Close handle
 	CloseHandle(file);
