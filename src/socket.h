@@ -209,13 +209,12 @@ void fileTransfer(HWND hwnd) {
 		memset(data, 0, sizeof(data));
 		memset(cipher, 0, sizeof(cipher));
 
-		if (!ReadFile(file, data, sizeof(data), &byteread, NULL)) {
-			appendTextW(hwnd_msg, L"\r\n!!!Transfer Error.");
+		if (!(ReadFile(file, data, sizeof(data), &byteread, NULL) && AES_encrypt(G_hwnd_key, data, sizeof(data), cipher, sizeof(cipher)) > 0)) {
+			appendTextW(hwnd_msg, L"\r\n!!!Transfer Error!!!");
 			CloseHandle(file);
 			CONNECTION = sock;
 			return;
 		}
-		AES_encrypt(G_hwnd_key, data, sizeof(data), cipher, sizeof(cipher));
 		send(sock, (char*)cipher, sizeof(cipher), 0);
 
 		count++;
@@ -224,7 +223,7 @@ void fileTransfer(HWND hwnd) {
 
 	} while (byteread == sizeof(data));
 
-	appendTextW(hwnd_msg, L"\r\n!!!Done transfer!");
+	appendTextW(hwnd_msg, L"\r\n!!!Done transfer!!!");
 
 	// Close handle
 	CloseHandle(file);
