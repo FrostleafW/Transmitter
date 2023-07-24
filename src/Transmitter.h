@@ -35,6 +35,8 @@ void createWidgets(HWND hwnd) {
 
 	SendMessageW(MSGBOX, EM_SETREADONLY, TRUE, NULL);
 	SendMessageW(TEXTBOX, EM_SETLIMITTEXT, (WPARAM)MAX_TEXT_W, NULL);
+	SendMessageW(IPBOX, EM_SETLIMITTEXT, (WPARAM)32, NULL);
+	SendMessageW(PORTBOX, EM_SETLIMITTEXT, (WPARAM)16, NULL);
 
 	// Initialize Winsock
 	WSADATA wsaData;
