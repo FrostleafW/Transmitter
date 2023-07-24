@@ -18,7 +18,7 @@ bool AES_start(BCRYPT_ALG_HANDLE& hwnd_alg, BCRYPT_KEY_HANDLE& hwnd_key, BYTE* A
 }
 
 void AES_generateKey(BYTE* AES_key) {
-	srand(time(NULL));
+	srand((u_int)time(NULL));
 	for (int i = 0; i < 16; i++)
 		AES_key[i] = rand() % 256;
 }
@@ -121,4 +121,11 @@ unsigned long RSA_decrypt(BCRYPT_KEY_HANDLE& hwnd_key, BYTE* cipher, int cipher_
 		return 0;
 	}
 	return len;
+}
+
+void Key_cleanup() {
+	BCryptDestroyKey(G_hwnd_key);
+	BCryptCloseAlgorithmProvider(G_hwnd_alg, NULL);
+	G_hwnd_alg = NULL;
+	G_hwnd_key = NULL;
 }

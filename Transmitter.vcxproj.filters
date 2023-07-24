@@ -32,5 +32,11 @@
     <ClInclude Include="src\encryption.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\transfer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\receive.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
