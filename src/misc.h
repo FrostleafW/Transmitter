@@ -41,15 +41,22 @@ void appendNumber(HWND& hwnd_msg, long long num) {
 	appendTextW(hwnd_msg, buffer);
 }
 
-void appendFilesize(HWND& hwnd_msg, DWORD num) {
-	if (num < 1024) {
-		appendNumber(hwnd_msg, num);
-		appendTextW(hwnd_msg, L" KB");
+void appendFilesize(HWND& hwnd_msg, DWORD filesize) {
+	if (filesize < 1024) {
+		appendNumber(hwnd_msg, filesize);
+		appendTextW(hwnd_msg, L" B");
 	}
 	else {
-		num = num % 1024 > 0 ? num / 1024 + 1 : num / 1024;
-		appendNumber(hwnd_msg, num);
-		appendTextW(hwnd_msg, L" MB");
+		filesize = filesize % 1024 > 0 ? filesize / 1024 + 1 : filesize / 1024;
+		if (filesize < 1024) {
+			appendNumber(hwnd_msg, filesize);
+			appendTextW(hwnd_msg, L" KB");
+		}
+		else {
+			filesize = filesize % 1024 > 0 ? filesize / 1024 + 1 : filesize / 1024;
+			appendNumber(hwnd_msg, filesize);
+			appendTextW(hwnd_msg, L" MB");
+		}
 	}
 }
 

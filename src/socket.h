@@ -120,7 +120,7 @@ void Connection(SOCKET sock, HWND hwnd) {
 	BYTE data[MAX_TEXT_W * 2];
 	while (true) {
 		memset(cipher, 0, sizeof(cipher));
-		_s = recv(sock, (char*)cipher, MAX_TEXT_W * 2, 0);
+		_s = recv(sock, (char*)cipher, sizeof(cipher), 0);
 		if (_s > 0)
 		{
 			memset(data, 0, sizeof(data));
@@ -168,28 +168,27 @@ void fileTransfer(HWND hwnd) {
 
 	// Open file and get size
 	HANDLE file = CreateFileW(filepath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	BYTE buffer[MAX_TEXT_W * 2];
 	LARGE_INTEGER filesize;
 
 	GetFileSizeEx(file, &filesize);
-	file_info.fileblocks = (DWORD)(filesize.QuadPart / sizeof(buffer)) + 1;
-	
+	file_info.filesize = (DWORD)filesize.QuadPart;
+
 	// Send file info
+	SOCKET sock = CONNECTION;
 	{
 		BYTE cipher[MAX_TEXT_W * 2] = { 0 };
 		int len = AES_encrypt(G_hwnd_key, (BYTE*)&file_info, sizeof(file_info), cipher, sizeof(cipher));
-		send(CONNECTION, (char*)&cipher, len, 0);
+		send(sock, (char*)cipher, len, 0);
 	}
 
 	HWND hwnd_msg = GetDlgItem(hwnd, MSGBOX_ID);
 	appendTextW(hwnd_msg, L"\r\n!!!You tried to send a file!!! Waiting for response...");
-	appendTextW(hwnd_msg, L"\r\nFilename: ");
+	appendTextW(hwnd_msg, L"\r\n\tFilename: ");
 	appendTextW(hwnd_msg, file_info.filename);
-	appendTextW(hwnd_msg, L"\r\nSize: ");
-	appendFilesize(hwnd_msg, file_info.fileblocks);
-	EnableWindow(GetDlgItem(hwnd, BTN_SEND_ID), false);
+	appendTextW(hwnd_msg, L"\r\n\tSize: ");
+	appendFilesize(hwnd_msg, file_info.filesize);
 
-	// Wait for response
+	// Wait for response for 3 min
 	int timeout = 0;
 	while (true) {
 		Sleep(1000);
@@ -199,17 +198,23 @@ void fileTransfer(HWND hwnd) {
 			return;
 		timeout++;
 	}
+	appendTextW(hwnd_msg, L"\r\nStart transferring...(# -> 1KB)\r\n");
 
-	//DWORD len_read = 0;
-	//for (DWORD i = 0; i < fileblocks; i++) {
-	//	memset(buffer, 0, sizeof(buffer));
-	//	if (!ReadFile(file, buffer, sizeof(buffer), &len_read, NULL))
-	//		break;
-	//	if (len_read == 0)
-	//		break;
-	//}
+	// Start sending file
+	BYTE data[MAX_TEXT_W * 2 - 1];
+	BYTE cipher[MAX_TEXT_W * 2];
+	for (DWORD i = 0; i < file_info.filesize; i += MAX_TEXT_W * 2 - 1) {
+		memset(data, 0, sizeof(data));
+		memset(cipher, 0, sizeof(cipher));
 
+		ReadFile(file, data, sizeof(data), NULL, NULL);
+		AES_encrypt(G_hwnd_key, data, sizeof(data), cipher, sizeof(cipher));
+		send(sock, (char*)cipher, sizeof(cipher), 0);
+		appendTextW(hwnd_msg, L"#");
+	}
+	appendTextW(hwnd_msg, L"\r\n!!!Done transfer.");
 
-	// Close file
+	// Close handle
 	CloseHandle(file);
+	CONNECTION = sock;
 }
