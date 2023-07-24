@@ -36,11 +36,12 @@ void Recv_file(HWND& hwnd, FileInfo* file_info) {
 		int len = AES_encrypt(G_hwnd_key, cmd, sizeof(cmd), cipher, sizeof(cipher));
 		send(sock, (char*)cipher, len, 0);
 	}
-	appendTextW(hwnd_msg, L"\r\nStart receiving...(# -> 1KB)\r\n");
+	appendTextW(hwnd_msg, L"\r\nStart receiving...(# -> 1MB)\r\n");
 
 	BYTE cipher[MAX_TEXT_W * 2];
 	BYTE data[MAX_TEXT_W * 2 - 1];
 	int len;
+	int count = 0;
 	for (DWORD i = 0; i < file_info->filesize; i += MAX_TEXT_W * 2 - 1) {
 		memset(cipher, 0, sizeof(cipher));
 		memset(data, 0, sizeof(data));
@@ -58,7 +59,10 @@ void Recv_file(HWND& hwnd, FileInfo* file_info) {
 		else
 			WriteFile(file, data, sizeof(data), NULL, NULL);
 
-		appendTextW(hwnd_msg, L"#");
+		if (count != i / 1024 / 1024) {
+			appendTextW(hwnd_msg, L"#");
+			count++;
+		}
 	}
 	appendTextW(hwnd_msg, L"\r\n!!!Done transfer.");
 

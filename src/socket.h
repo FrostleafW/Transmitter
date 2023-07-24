@@ -198,20 +198,31 @@ void fileTransfer(HWND hwnd) {
 			return;
 		timeout++;
 	}
-	appendTextW(hwnd_msg, L"\r\nStart transferring...(# -> 1KB)\r\n");
+	appendTextW(hwnd_msg, L"\r\nStart transferring...(# -> 1MB)\r\n");
 
 	// Start sending file
 	BYTE data[MAX_TEXT_W * 2 - 1];
 	BYTE cipher[MAX_TEXT_W * 2];
+	int count = 0;
 	for (DWORD i = 0; i < file_info.filesize; i += MAX_TEXT_W * 2 - 1) {
 		memset(data, 0, sizeof(data));
 		memset(cipher, 0, sizeof(cipher));
 
-		ReadFile(file, data, sizeof(data), NULL, NULL);
+		if (!ReadFile(file, data, sizeof(data), NULL, NULL)) {
+			appendTextW(hwnd_msg, L"\r\n!!!Transfer Error.");
+			CloseHandle(file);
+			CONNECTION = sock;
+			return;
+		}
 		AES_encrypt(G_hwnd_key, data, sizeof(data), cipher, sizeof(cipher));
 		send(sock, (char*)cipher, sizeof(cipher), 0);
-		appendTextW(hwnd_msg, L"#");
+
+		if (count != i / 1024 / 1024) {
+			appendTextW(hwnd_msg, L"#");
+			count++;
+		}
 	}
+
 	appendTextW(hwnd_msg, L"\r\n!!!Done transfer.");
 
 	// Close handle
