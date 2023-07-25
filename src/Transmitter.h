@@ -20,7 +20,7 @@ void createWidgets(HWND hwnd) {
 	HWND IPBOX = CreateWindowW(TEXT("EDIT"), TEXT("IP"), WS_BORDER | WS_CHILD | WS_VISIBLE | ES_LEFT | ES_AUTOHSCROLL, Win_WIDTH - 140, 60, 120, 24, hwnd, (HMENU)IPBOX_ID, GetModuleHandle(NULL), NULL);
 	HWND PORTBOX = CreateWindowW(TEXT("EDIT"), TEXT("PORT"), WS_BORDER | WS_CHILD | WS_VISIBLE | ES_LEFT | ES_AUTOHSCROLL | ES_NUMBER, Win_WIDTH - 140, 90, 120, 24, hwnd, (HMENU)PORTBOX_ID, GetModuleHandle(NULL), NULL);
 	HWND BTN_FILE = CreateWindowW(TEXT("BUTTON"), TEXT("Send File"), WS_CHILD | WS_VISIBLE | ES_CENTER, Win_WIDTH - 130, Win_HEIGHT - 190, 100, 40, hwnd, (HMENU)BTN_FILE_ID, GetModuleHandle(NULL), NULL);
-
+	HWND BTN_CALL = CreateWindowW(TEXT("BUTTON"), TEXT("Call"), WS_CHILD | WS_VISIBLE | ES_CENTER, Win_WIDTH - 130, Win_HEIGHT - 250, 100, 40, hwnd, (HMENU)BTN_CALL_ID, GetModuleHandle(NULL), NULL);
 
 	// Set fonts
 	HFONT TextFont = CreateFontW(22, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Arial");
@@ -32,7 +32,9 @@ void createWidgets(HWND hwnd) {
 	SendMessageW(IPBOX, WM_SETFONT, (WPARAM)TextFontSmall, TRUE);
 	SendMessageW(PORTBOX, WM_SETFONT, (WPARAM)TextFontSmall, TRUE);
 	SendMessageW(BTN_FILE, WM_SETFONT, (WPARAM)TextFont, TRUE);
+	SendMessageW(BTN_CALL, WM_SETFONT, (WPARAM)TextFont, TRUE);
 
+	// Set properties
 	SendMessageW(MSGBOX, EM_SETREADONLY, TRUE, NULL);
 	SendMessageW(TEXTBOX, EM_SETLIMITTEXT, (WPARAM)MAX_TEXT_W, NULL);
 	SendMessageW(IPBOX, EM_SETLIMITTEXT, (WPARAM)32, NULL);
@@ -77,6 +79,25 @@ void callbackWidgets(HWND hwnd, int id) {
 		break;
 	}
 	}
+}
+
+void callbackSize(HWND hwnd) {
+	// Get window size
+	RECT rect;
+	if (GetWindowRect(hwnd, &rect))
+	{
+		Win_WIDTH = rect.right - rect.left;
+		Win_HEIGHT = rect.bottom - rect.top;
+	}
+
+	SetWindowPos(GetDlgItem(hwnd, MSGBOX_ID), NULL, NULL, NULL, Win_WIDTH - 150, Win_HEIGHT - 150, SWP_NOMOVE | SWP_NOZORDER);
+	SetWindowPos(GetDlgItem(hwnd, BTN_CLNT_ID), NULL, Win_WIDTH - 130, 15, NULL, NULL, SWP_NOSIZE | SWP_NOZORDER);
+	SetWindowPos(GetDlgItem(hwnd, TEXTBOX_ID), NULL, 5, Win_HEIGHT - 135, Win_WIDTH - 150, 90, SWP_NOZORDER);
+	SetWindowPos(GetDlgItem(hwnd, BTN_SEND_ID), NULL, Win_WIDTH - 130, Win_HEIGHT - 110, NULL, NULL, SWP_NOSIZE | SWP_NOZORDER);
+	SetWindowPos(GetDlgItem(hwnd, IPBOX_ID), NULL, Win_WIDTH - 140, 60, NULL, NULL, SWP_NOSIZE | SWP_NOZORDER);
+	SetWindowPos(GetDlgItem(hwnd, PORTBOX_ID), NULL, Win_WIDTH - 140, 90, NULL, NULL, SWP_NOSIZE | SWP_NOZORDER);
+	SetWindowPos(GetDlgItem(hwnd, BTN_FILE_ID), NULL, Win_WIDTH - 130, Win_HEIGHT - 190, NULL, NULL, SWP_NOSIZE | SWP_NOZORDER);
+	SetWindowPos(GetDlgItem(hwnd, BTN_CALL_ID), NULL, Win_WIDTH - 130, Win_HEIGHT - 250, NULL, NULL, SWP_NOSIZE | SWP_NOZORDER);
 }
 
 LRESULT CALLBACK callbackTextbox(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)

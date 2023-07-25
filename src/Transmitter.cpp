@@ -29,7 +29,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	}
 
 	// Create window
-	HWND hwnd = CreateWindowEx(0, Class_Name, App_Name, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME, (GetSystemMetrics(0) - Win_WIDTH) / 2, (GetSystemMetrics(1) - Win_HEIGHT) / 2, Win_WIDTH, Win_HEIGHT, NULL, NULL, hInstance, NULL);
+	HWND hwnd = CreateWindowEx(0, Class_Name, App_Name, WS_OVERLAPPEDWINDOW, (GetSystemMetrics(0) - Win_WIDTH) / 2, (GetSystemMetrics(1) - Win_HEIGHT) / 2, Win_WIDTH, Win_HEIGHT, NULL, NULL, hInstance, NULL);
 	ShowWindow(hwnd, nShowCmd);
 
 	// Run message loop
@@ -48,23 +48,33 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 
 	switch (message) {
 	case WM_CREATE:
+	{
 		createWidgets(hwnd);
 		break;
-
+	}
 	case WM_COMMAND:
+	{
 		callbackWidgets(hwnd, LOWORD(wParam));
 		break;
-
+	}
+	case WM_SIZING:
+	{
+		callbackSize(hwnd);
+		break;
+	}
 	case WM_PAINT:
+	{
 		BeginPaint(hwnd, &ps);
 		EndPaint(hwnd, &ps);
 		break;
-
+	}
 	case WM_DESTROY:
+	{
 		closesocket(CONNECTION);
 		WSACleanup();
 		PostQuitMessage(0);
 		break;
+	}
 	}
 
 	return DefWindowProc(hwnd, message, wParam, lParam);

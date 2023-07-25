@@ -1,8 +1,5 @@
 #pragma once
 
-#define Win_HEIGHT 600
-#define Win_WIDTH 800
-
 #define MSGBOX_ID 10
 #define BTN_CLNT_ID 11
 #define TEXTBOX_ID 12
@@ -10,10 +7,14 @@
 #define IPBOX_ID 14
 #define PORTBOX_ID 15
 #define BTN_FILE_ID 16
+#define BTN_CALL_ID 17
 
 #define MAX_TEXT_W 512
 
 #define DEFAULT_PORT 17010
+
+int Win_WIDTH = 800;
+int Win_HEIGHT = 600;
 
 int RECEIVE_MODE = 1; // 1: Text; 2: File
 SOCKET CONNECTION = INVALID_SOCKET;
