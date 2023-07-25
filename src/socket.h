@@ -173,6 +173,7 @@ void fileTransfer(HWND hwnd) {
 
 	// Send file info
 	SOCKET sock = CONNECTION;
+	RECEIVE_MODE = 2;
 	{
 		BYTE cipher[MAX_TEXT_W * 2] = { 0 };
 		int len = AES_encrypt(G_hwnd_key, (BYTE*)&file_info, sizeof(file_info), cipher, sizeof(cipher));
@@ -192,8 +193,10 @@ void fileTransfer(HWND hwnd) {
 		Sleep(1000);
 		if (CONNECTION == INVALID_SOCKET)
 			break;
-		if (timeout > 180)
+		if (timeout > 100) {
+			RECEIVE_MODE = 1;
 			return;
+		}
 		timeout++;
 	}
 	appendTextW(hwnd_msg, L"\r\nStart transferring...(# -> 1MB)\r\n");
@@ -211,6 +214,7 @@ void fileTransfer(HWND hwnd) {
 			appendTextW(hwnd_msg, L"\r\n!!!Transfer Error!!!");
 			CloseHandle(file);
 			CONNECTION = sock;
+			RECEIVE_MODE = 1;
 			return;
 		}
 		send(sock, (char*)cipher, sizeof(cipher), 0);
@@ -226,4 +230,5 @@ void fileTransfer(HWND hwnd) {
 	// Close handle
 	CloseHandle(file);
 	CONNECTION = sock;
+	RECEIVE_MODE = 1;
 }

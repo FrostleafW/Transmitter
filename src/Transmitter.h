@@ -52,7 +52,7 @@ void createWidgets(HWND hwnd) {
 }
 
 void callbackWidgets(HWND hwnd, int id) {
-	
+
 	switch (id)
 	{
 	case BTN_CLNT_ID:
@@ -72,7 +72,7 @@ void callbackWidgets(HWND hwnd, int id) {
 	case BTN_FILE_ID:
 	{
 		// Send File Btn
-		if (CONNECTION != INVALID_SOCKET)
+		if (CONNECTION != INVALID_SOCKET && RECEIVE_MODE == 1)
 			Btn_sendFile(hwnd);
 		break;
 	}
