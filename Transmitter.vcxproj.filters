@@ -35,10 +35,10 @@
     <ClInclude Include="src\misc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Encryption.h">
+    <ClInclude Include="src\Network.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Network.h">
+    <ClInclude Include="src\Encryption.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
