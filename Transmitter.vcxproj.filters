@@ -18,24 +18,27 @@
     <ClCompile Include="src\Transmitter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Encryption.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\misc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Network.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Transmitter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\socket.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\misc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\encryption.h">
+    <ClInclude Include="src\Encryption.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\transfer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\receive.h">
+    <ClInclude Include="src\Network.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

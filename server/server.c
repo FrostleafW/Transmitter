@@ -13,7 +13,7 @@ void* thread_run(void* arg)
 {
 	printf("New connection created\n");
 	int* fd = (int*)arg;
-	char buf[1024];
+	char buf[2048];
 	while(1)
 	{
 		memset(buf, '\0', sizeof(buf));
@@ -124,6 +124,7 @@ int main(int argc, char* argv[])
 
 	while(1)
 	{
+		sleep(1);
 		if(fd[0] == -1 || fd_s[0] == -1)
 		{
 			break;

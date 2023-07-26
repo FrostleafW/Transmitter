@@ -1,9 +1,18 @@
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <stdio.h>
+#pragma comment(lib, "Ws2_32.lib")
+#pragma comment(lib, "winmm.lib")
+#include "Network.h"
+#include "misc.h"
 #include "Transmitter.h"
+
+Network conn;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nShowCmd)
 {
-	//AllocConsole();
-	//freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
+	AllocConsole();
+	freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
 
 	// Register window class
 	const WCHAR Class_Name[] = L"Transmitter";
@@ -26,8 +35,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		return 0;
 	}
 
+	int Win_WIDTH = 800;
+	int Win_HEIGHT = 600;
+
 	// Create window
-	HWND hwnd = CreateWindowEx(0, Class_Name, App_Name, WS_OVERLAPPEDWINDOW, (GetSystemMetrics(0) - Win_WIDTH) / 2, (GetSystemMetrics(1) - Win_HEIGHT) / 2, Win_WIDTH, Win_HEIGHT, NULL, NULL, hInstance, NULL);
+	HWND hwnd = CreateWindowExW(0, Class_Name, App_Name, WS_OVERLAPPEDWINDOW, (GetSystemMetrics(0) - Win_WIDTH) / 2, (GetSystemMetrics(1) - Win_HEIGHT) / 2, Win_WIDTH, Win_HEIGHT, NULL, NULL, hInstance, NULL);
 	ShowWindow(hwnd, nShowCmd);
 
 	// Run message loop
@@ -35,7 +47,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	while (GetMessage(&msg, NULL, 0, 0) > 0)
 	{
 		TranslateMessage(&msg);
-		DispatchMessage(&msg);
+		DispatchMessageW(&msg);
 	}
 
 	return 0;
@@ -47,6 +59,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 	switch (message) {
 	case WM_CREATE:
 	{
+		conn.passHandle(hwnd);
 		createWidgets(hwnd);
 		break;
 	}
@@ -57,6 +70,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 	}
 	case WM_SIZE:
 	{
+		if (wParam == SIZE_MINIMIZED)
+			return 0;
 		callbackSize(hwnd);
 		break;
 	}
@@ -68,7 +83,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 	}
 	case WM_DESTROY:
 	{
-		closesocket(CONNECTION);
 		WSACleanup();
 		PostQuitMessage(0);
 		break;
@@ -79,6 +93,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 }
 
 void createWidgets(HWND hwnd) {
+	int Win_WIDTH = 800;
+	int Win_HEIGHT = 600;
+
 	// Render widgets
 	HWND MSGBOX = CreateWindowW(TEXT("EDIT"), TEXT("Welcome to Transmitter!\r\nInput IP address to connect..."), WS_BORDER | WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL, 5, 5, Win_WIDTH - 150, Win_HEIGHT - 150, hwnd, (HMENU)MSGBOX_ID, GetModuleHandle(NULL), NULL);
 	HWND BTN_CLNT = CreateWindowW(TEXT("BUTTON"), TEXT("Connect"), WS_CHILD | WS_VISIBLE | ES_CENTER, Win_WIDTH - 130, 15, 100, 40, hwnd, (HMENU)BTN_CLNT_ID, GetModuleHandle(NULL), NULL);
@@ -117,7 +134,6 @@ void createWidgets(HWND hwnd) {
 	// Set Textbox callback
 	TextboxProc = (WNDPROC)SetWindowLongPtr(TEXTBOX, GWLP_WNDPROC, (LONG_PTR)callbackTextbox);
 
-
 }
 
 void callbackWidgets(HWND hwnd, int id) {
@@ -127,35 +143,38 @@ void callbackWidgets(HWND hwnd, int id) {
 	case BTN_CLNT_ID:
 	{
 		// Connect Btn
-		Btn_connect(hwnd);
+		WCHAR ip[32]{};
+		GetWindowTextW(GetDlgItem(hwnd, IPBOX_ID), ip, 32);
+		conn.connect_to(ip, getPort(hwnd));
 		break;
 	}
-	case BTN_SEND_ID:
-	{
-		// Send Btn
-		if (CONNECTION != INVALID_SOCKET) {
-			Btn_sendText(hwnd);
-		}
-		break;
-	}
-	case BTN_FILE_ID:
-	{
-		// Send File Btn
-		if (CONNECTION != INVALID_SOCKET && SEND_MODE == 1)
-			Btn_sendFile(hwnd);
-		break;
-	}
-	case BTN_CALL_ID:
-	{
-		// Call Btn
-		if (CONNECTION != INVALID_SOCKET && SEND_MODE == 1)
-			Btn_call(hwnd);
-		break;
-	}
+	//case BTN_SEND_ID:
+	//{
+	//	// Send Btn
+	//	if (CONNECTION != INVALID_SOCKET)
+	//		Btn_sendText(hwnd);
+	//	break;
+	//}
+	//case BTN_FILE_ID:
+	//{
+	//	// Send File Btn
+	//	if (CONNECTION != INVALID_SOCKET && SEND_MODE == 1)
+	//		Btn_sendFile(hwnd);
+	//	break;
+	//}
+	//case BTN_CALL_ID:
+	//{
+	//	// Call Btn
+	//	if (CONNECTION != INVALID_SOCKET && SEND_MODE == 1)
+	//		Btn_call(hwnd);
+	//	break;
+	//}
 	}
 }
 
 void callbackSize(HWND hwnd) {
+	int Win_WIDTH = 800;
+	int Win_HEIGHT = 600;
 	// Get window size
 	RECT rect;
 	if (GetWindowRect(hwnd, &rect))

@@ -1,155 +1,25 @@
 #pragma once
 
 SOCKET Client(HWND hwnd) {
-	// Get ip address
-	HWND hwnd_msg = GetDlgItem(hwnd, MSGBOX_ID);
-	WCHAR ip[32]{};
-	USHORT port;
-	int len;
-
+	// Get ip address and port
 	appendTextW(hwnd_msg, L"\r\nTry connecting to ");
-	len = getIP(hwnd, ip);
+	int len = getIP(hwnd, ip);
 	if (len < 7)
 		memcpy(ip, L"127.0.0.1", 20);
 	port = getPort(hwnd);
 	if (port == 0)
 		port = DEFAULT_PORT;
-	appendTextW(hwnd_msg, ip);
-	appendTextW(hwnd_msg, L":");
-	appendNumber(hwnd_msg, port);
-	appendTextW(hwnd_msg, L"...");
-
-	// Set up socket
-	SOCKET ClientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	sockaddr_in addrServ{};
-	InetPtonW(AF_INET, (PCWSTR)ip, &addrServ.sin_addr);
-	addrServ.sin_family = AF_INET;
-	addrServ.sin_port = htons(port);
-
-	// Send request to server
-	if (connect(ClientSocket, (SOCKADDR*)&addrServ, sizeof(SOCKADDR)) == 0)
-		return ClientSocket;
-	closesocket(ClientSocket);
-	return INVALID_SOCKET;
 }
 
 void Connection(SOCKET sock, HWND hwnd) {
 	HWND hwnd_msg = GetDlgItem(hwnd, MSGBOX_ID);
 	CONNECTION = sock;
-	BYTE cipher[MAX_TEXT_W * 2];
-	BYTE data[MAX_TEXT_W * 2];
-	int _s;
-	while (true) {
-		memset(cipher, 0, sizeof(cipher));
-		_s = recv(sock, (char*)cipher, sizeof(cipher), 0);
-		if (_s > 0)
-		{
-			memset(data, 0, sizeof(data));
-			AES_decrypt(G_hwnd_key, cipher, _s, data, sizeof(data));
-			// Receive command
-			if (data[0] == 0)
-				Recv_cmd(hwnd, data);
-			// Receive normal text
-			else
-				Recv_text(hwnd_msg, data);
-		}
-		else
-		{
-			SEND_MODE = 1;
-			appendTextW(hwnd_msg, L"\r\n!!!Connection stopped...");
-			break;
-		}
-		Sleep(500);
-	}
-	Key_cleanup();
+	
+	
 	closesocket(sock);
 	CONNECTION = INVALID_SOCKET;
 
 	EnableWindow(GetDlgItem(hwnd, BTN_CLNT_ID), true);
-}
-
-void startConnect(SOCKET sock, HWND hwnd) {
-	HWND hwnd_msg = GetDlgItem(hwnd, MSGBOX_ID);
-	// Wait until notified
-	appendTextW(hwnd_msg, L"\r\nWaiting to start communication...");
-	int _s;
-	char id[2]{};
-	_s = recv(sock, id, 2, 0);
-	if (_s <= 0) {
-		appendTextW(hwnd_msg, L"\r\n!!!Connection stopped...");
-		return;
-	}
-
-	// Client #1 sets up RSA
-	if (id[0] == 0x01) {
-		// Create RSA key
-		if (RSA_start(G_hwnd_alg, G_hwnd_key)) {
-			// Send RSA public key
-			BYTE public_key[MAX_TEXT_W]{};
-			int len = RSA_exportPublic(G_hwnd_key, public_key, sizeof(public_key));
-			if (send(sock, (char*)public_key, len, 0) > 0)
-				appendTextW(hwnd_msg, L"\r\nSent RSA key...");
-
-			// Wait for AES key
-			BYTE aes_key_enc[MAX_TEXT_W]{};
-			_s = recv(sock, (char*)aes_key_enc, sizeof(aes_key_enc), 0);
-			if (_s <= 0) {
-				appendTextW(hwnd_msg, L"\r\n!!!Connection stopped...");
-				return;
-			}
-
-			// Decrypt AES key
-			BYTE AES_key[16]{};
-			if (RSA_decrypt(G_hwnd_key, aes_key_enc, _s, AES_key, sizeof(AES_key)) > 0) {
-				appendTextW(hwnd_msg, L"\r\nReceived AES key...");
-			}
-
-			// Destory RSA handle
-			Key_cleanup();
-
-			// Set up AES handle
-			if (AES_start(G_hwnd_alg, G_hwnd_key, AES_key, sizeof(AES_key)))
-				appendTextW(hwnd_msg, L"\r\nSecure communication established!");
-		}
-	}
-	// Client #2 waits for RSA
-	else if (id[0] == 0x02) {
-		// Receive RSA public key
-		BYTE public_key[MAX_TEXT_W]{};
-		_s = recv(sock, (char*)public_key, sizeof(public_key), 0);
-		if (_s <= 0) {
-			appendTextW(hwnd_msg, L"\r\n!!!Connection stopped...");
-			return;
-		}
-		appendTextW(hwnd_msg, L"\r\nReceived RSA key...");
-
-		// Create AES key
-		BYTE AES_key[16]{};
-		AES_generateKey(AES_key);
-		appendTextW(hwnd_msg, L"\r\nGenerated AES key...");
-
-		// Encrypt AES key
-		if (RSA_importPublic(G_hwnd_alg, G_hwnd_key, public_key, _s)) {
-			BYTE aes_key_enc[MAX_TEXT_W]{};
-			int len = RSA_encrypt(G_hwnd_key, AES_key, sizeof(AES_key), aes_key_enc, sizeof(aes_key_enc));
-
-			// Send AES key
-			if (send(sock, (char*)aes_key_enc, len, 0) > 0)
-				appendTextW(hwnd_msg, L"\r\nSent AES key...");
-		}
-
-		// Destory RSA handle
-		Key_cleanup();
-
-		// Set up AES handle
-		if (AES_start(G_hwnd_alg, G_hwnd_key, AES_key, sizeof(AES_key)))
-			appendTextW(hwnd_msg, L"\r\nSecure communication established!");
-	}
-
-	appendTextW(hwnd_msg, L"\r\n----------------------------------------");
-	SEND_MODE = 1;
-	std::thread conn(Connection, sock, hwnd);
-	conn.detach();
 }
 
 void fileTransfer(HWND hwnd) {
