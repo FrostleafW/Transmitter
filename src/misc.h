@@ -1,5 +1,6 @@
 #pragma once
 
+// Windows ID
 #define MSGBOX_ID 10
 #define BTN_CLNT_ID 11
 #define TEXTBOX_ID 12
@@ -9,15 +10,20 @@
 #define BTN_FILE_ID 16
 #define BTN_CALL_ID 17
 
+// Text length limit
+#define AES_PADDING 32
 #define MAX_TEXT_W 512
+
+#define AUDIO_BUFFER 16
 
 #define DEFAULT_PORT 17010
 
 int Win_WIDTH = 800;
 int Win_HEIGHT = 600;
 
-int RECEIVE_MODE = 1; // 1: Text; 2: File
+int SEND_MODE = 1; // 1: Text; 2: File; 3: Call
 SOCKET CONNECTION = INVALID_SOCKET;
+
 BCRYPT_ALG_HANDLE G_hwnd_alg = NULL;
 BCRYPT_KEY_HANDLE G_hwnd_key = NULL;
 
@@ -34,7 +40,7 @@ void appendTextA(HWND& hwnd_msg, const char* buffer) {
 }
 
 void appendNumber(HWND& hwnd_msg, long long num) {
-	WCHAR buffer[MAX_TEXT_W] = { 0 };
+	WCHAR buffer[MAX_TEXT_W]{};
 	int digit = (int)log10((double)num);
 	for (int i = digit; i >= 0; i--) {
 		buffer[i] = num % 10 + L'0';
@@ -63,7 +69,7 @@ void appendFilesize(HWND& hwnd_msg, DWORD filesize) {
 }
 
 void appendTextByte(HWND& hwnd_msg, BYTE* buffer, int len) {
-	char str[MAX_TEXT_W] = { 0 };
+	char str[MAX_TEXT_W]{};
 	BYTE* pin = buffer;
 	const char* hex = "0123456789ABCDEF";
 	char* pout = str;
@@ -87,7 +93,7 @@ int getText(HWND& hwnd, WCHAR* text) {
 
 int getIP(HWND& hwnd, WCHAR* text) {
 	HWND hwnd_text = GetDlgItem(hwnd, IPBOX_ID);
-	int len = GetWindowTextW(hwnd_text, text, MAX_TEXT_W);
+	int len = GetWindowTextW(hwnd_text, text, 32);
 	return len;
 }
 
@@ -95,9 +101,9 @@ USHORT getPort(HWND& hwnd) {
 	USHORT port = 0;
 	USHORT temp = 0;
 	USHORT digit = 0;
-	WCHAR text[MAX_TEXT_W] = { 0 };
+	WCHAR text[8]{};
 	HWND hwnd_text = GetDlgItem(hwnd, PORTBOX_ID);
-	int len = GetWindowTextW(hwnd_text, text, MAX_TEXT_W);
+	int len = GetWindowTextW(hwnd_text, text, 8);
 	for (int i = len - 1; i >= 0; i--) {
 		if (text[i] <= L'9' && text[i] >= L'0') {
 			temp = text[i] - L'0';
