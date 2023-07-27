@@ -61,7 +61,7 @@ void appendTextByte(HWND& hwnd_msg, BYTE* buffer, int len) {
 	appendTextA(hwnd_msg, str);
 }
 
-int getText(HWND& hwnd, WCHAR* text) {
+int getText(HWND hwnd, WCHAR* text) {
 	HWND hwnd_text = GetDlgItem(hwnd, TEXTBOX_ID);
 	int len = GetWindowTextW(hwnd_text, text, MAX_TEXT_W);
 	SetWindowTextW(hwnd_text, NULL);

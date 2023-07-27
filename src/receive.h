@@ -1,40 +1,10 @@
 #pragma once
 
-struct FileInfo {
-	char cmd[2] = { 0, 1 };
-	WCHAR filename[MAX_PATH]{};
-	DWORD filesize = 0;
-};
+
 
 bool Recv_file(HWND& hwnd, FileInfo* file_info) {
-	if (MessageBoxW(hwnd, L"Receive?", L"Transmitter", MB_YESNO | MB_DEFBUTTON2) == IDNO)
-		return false;
 
-	// Initialize savepath
-	OPENFILENAMEW ofn;
 
-	ZeroMemory(&ofn, sizeof(ofn));
-	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = hwnd;
-	ofn.lpstrFile = file_info->filename;
-	ofn.nMaxFile = sizeof(file_info->filename);
-	ofn.Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
-	if (!GetSaveFileName(&ofn))
-		return false;
-
-	HANDLE file = CreateFileW(file_info->filename, GENERIC_WRITE, NULL, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-	HWND hwnd_msg = GetDlgItem(hwnd, MSGBOX_ID);
-
-	// Start receiving file
-	SOCKET sock = CONNECTION;
-	CONNECTION = INVALID_SOCKET;
-	{
-		BYTE cmd[2] = { 0, 2 };
-		BYTE cipher[AES_PADDING]{};
-		int len = AES_encrypt(G_hwnd_key, cmd, sizeof(cmd), cipher, sizeof(cipher));
-		send(sock, (char*)cipher, len, 0);
-	}
-	appendTextW(hwnd_msg, L"\r\nStart receiving...(# -> 1MB)\r\n");
 
 	BYTE cipher[MAX_TEXT_W * 2];
 	BYTE data[MAX_TEXT_W * 2 - 1];
@@ -68,7 +38,7 @@ bool Recv_file(HWND& hwnd, FileInfo* file_info) {
 		if (count % (MAX_TEXT_W * 2 + 1) == 0)
 			appendTextW(hwnd_msg, L"#");
 	}
-	appendTextW(hwnd_msg, L"\r\n!!!Done transfer!!!");
+	
 
 	// Close handle
 	CloseHandle(file);
@@ -76,10 +46,6 @@ bool Recv_file(HWND& hwnd, FileInfo* file_info) {
 	return true;
 }
 
-void Recv_text(HWND& hwnd_msg, BYTE* text) {
-	appendTextW(hwnd_msg, L"\r\n> ");
-	appendTextW(hwnd_msg, (WCHAR*)text);
-}
 
 void audioTransfer(HWND hwnd, bool init, SOCKET sock);
 void waveOutProc(HWAVEOUT waveOut, UINT message, DWORD_PTR dwInstance, DWORD_PTR waveOutHeader, DWORD_PTR dwParam2);
@@ -174,30 +140,8 @@ void waveOutProc(HWAVEOUT waveOut, UINT message, DWORD_PTR dwInstance, DWORD_PTR
 }
 
 void Recv_cmd(HWND& hwnd, BYTE* cmd) {
-	HWND hwnd_msg = GetDlgItem(hwnd, MSGBOX_ID);
-	// File info
-	if (cmd[1] == 1) {
-		appendTextW(hwnd_msg, L"\r\n!!!A file is ready to be sent to you!!! Receive it?");
-		appendTextW(hwnd_msg, L"\r\n\tFilename: ");
-		appendTextW(hwnd_msg, ((FileInfo*)cmd)->filename);
-		appendTextW(hwnd_msg, L"\r\n\tSize: ");
-		appendFilesize(hwnd_msg, ((FileInfo*)cmd)->filesize);
 
-		if (!Recv_file(hwnd, (FileInfo*)cmd)) {
-			BYTE cmd[2] = { 0, 3 };
-			BYTE cipher[AES_PADDING]{};
-			int len = AES_encrypt(G_hwnd_key, cmd, sizeof(cmd), cipher, sizeof(cipher));
-			send(CONNECTION, (char*)cipher, len, 0);
-		}
-	}
-	// File ready to send
-	else if (cmd[1] == 2) {
-		CONNECTION = INVALID_SOCKET;
-	}
-	// File fail to send
-	else if (cmd[1] == 3) {
-		SEND_MODE = 1;
-	}
+	
 	// Call request
 	else if (cmd[1] == 4) {
 		appendTextW(hwnd_msg, L"\r\n!!!The other side wants to start a voice call!!!");

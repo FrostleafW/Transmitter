@@ -1,25 +1,37 @@
 #pragma once
 #include "Encryption.h"
+#include "FileTransfer.h"
 
 class Network
 {
 	SOCKET sock = INVALID_SOCKET;
+	int mode = 0; // 0: No connection; 1: Text; 2: File;
+	bool occupy = false;
+	unsigned int count = 0;
 
 	Encryption key;
+	FileTransfer* file = nullptr;
 
-	HWND hwnd;
-	HWND hwnd_msg;
-	HWND hwnd_clnt;
+	HWND hwnd = NULL;
+	HWND hwnd_msg = NULL;
+	HWND hwnd_clnt = NULL;
 
 	void connection();
 	bool connect_encrypt();
-	bool send_data(BYTE* data, int len);
+	void send_data(BYTE* data, int len);
+	void recv_cmd(BYTE* cmd);
+	void recv_text(BYTE* text);
+	void recv_file(BYTE* data);
+	bool recv_fileinfo();
 
 public:
 	void passHandle(HWND hwnd);
+	bool is_connected();
 	bool connect_to(WCHAR* ip, unsigned short port);
-	bool send_text(WCHAR* text, int len);
-	bool send_file(WCHAR* filename, int len);
-	bool send_audio(char* audio, int len);
+	void send_text(WCHAR* text, int len);
+	void send_file();
+	void send_audio(char* audio, int len);
+	void disconnect();
+	~Network();
 };
 

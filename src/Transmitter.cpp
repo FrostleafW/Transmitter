@@ -3,8 +3,12 @@
 #include <stdio.h>
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "winmm.lib")
-#include "Network.h"
+
+#include <thread>
+
 #include "misc.h"
+#include "Network.h"
+#include "FileTransfer.h"
 #include "Transmitter.h"
 
 Network conn;
@@ -59,8 +63,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 	switch (message) {
 	case WM_CREATE:
 	{
-		conn.passHandle(hwnd);
 		createWidgets(hwnd);
+		conn.passHandle(hwnd);
 		break;
 	}
 	case WM_COMMAND:
@@ -120,7 +124,7 @@ void createWidgets(HWND hwnd) {
 
 	// Set properties
 	SendMessageW(MSGBOX, EM_SETREADONLY, TRUE, NULL);
-	SendMessageW(TEXTBOX, EM_SETLIMITTEXT, (WPARAM)MAX_TEXT_W, NULL);
+	SendMessageW(TEXTBOX, EM_SETLIMITTEXT, (WPARAM)MAX_TEXT_W - 1, NULL);
 	SendMessageW(IPBOX, EM_SETLIMITTEXT, (WPARAM)32, NULL);
 	SendMessageW(PORTBOX, EM_SETLIMITTEXT, (WPARAM)8, NULL);
 
@@ -137,31 +141,43 @@ void createWidgets(HWND hwnd) {
 }
 
 void callbackWidgets(HWND hwnd, int id) {
-
 	switch (id)
 	{
 	case BTN_CLNT_ID:
 	{
 		// Connect Btn
 		WCHAR ip[32]{};
-		GetWindowTextW(GetDlgItem(hwnd, IPBOX_ID), ip, 32);
-		conn.connect_to(ip, getPort(hwnd));
+		int len = GetWindowTextW(GetDlgItem(hwnd, IPBOX_ID), ip, 32);
+		if (len < 7)
+			memcpy(ip, L"127.0.0.1", 20);
+
+		USHORT port = getPort(hwnd);
+		if (port == 0)
+			port = DEFAULT_PORT;
+
+		conn.connect_to(ip, port);
 		break;
 	}
-	//case BTN_SEND_ID:
-	//{
-	//	// Send Btn
-	//	if (CONNECTION != INVALID_SOCKET)
-	//		Btn_sendText(hwnd);
-	//	break;
-	//}
-	//case BTN_FILE_ID:
-	//{
-	//	// Send File Btn
-	//	if (CONNECTION != INVALID_SOCKET && SEND_MODE == 1)
-	//		Btn_sendFile(hwnd);
-	//	break;
-	//}
+	case BTN_SEND_ID:
+	{
+		// Send Btn
+		if (conn.is_connected()) {
+			WCHAR text[MAX_TEXT_W]{};
+			int len = getText(hwnd, text);
+			if (len > 0)
+				conn.send_text(text, len);
+		}
+		break;
+	}
+	case BTN_FILE_ID:
+	{
+		// Send File Btn
+		if (conn.is_connected()) {
+			std::thread file_thread([&] {conn.send_file(); });
+			file_thread.detach();
+		}
+		break;
+	}
 	//case BTN_CALL_ID:
 	//{
 	//	// Call Btn

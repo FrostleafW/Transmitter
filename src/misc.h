@@ -28,6 +28,6 @@ void appendFilesize(HWND& hwnd_msg, DWORD filesize);
 
 void appendTextByte(HWND& hwnd_msg, BYTE* buffer, int len);
 
-int getText(HWND& hwnd, WCHAR* text);
+int getText(HWND hwnd, WCHAR* text);
 
 USHORT getPort(HWND& hwnd);
