@@ -1,23 +1,10 @@
 #pragma once
 
 
-void CALLBACK waveInProc(HWAVEIN waveIn, UINT message, DWORD_PTR sock, DWORD_PTR waveInHeader, DWORD_PTR dwParam2);
+
 void audioTransfer(HWND hwnd, bool init, SOCKET sock) {
-	HWND hwnd_msg = GetDlgItem(hwnd, MSGBOX_ID);
 
-	// Audio format
-	WAVEFORMATEX pcmWaveFormat{};
-	pcmWaveFormat.wFormatTag = WAVE_FORMAT_PCM;
-	pcmWaveFormat.nChannels = 1;
-	pcmWaveFormat.nSamplesPerSec = 8000;
-	pcmWaveFormat.nAvgBytesPerSec = 8000;
-	pcmWaveFormat.nBlockAlign = 1;
-	pcmWaveFormat.wBitsPerSample = 8;
-	pcmWaveFormat.cbSize = 0;
 
-	// Set up microphone
-	HWAVEIN waveIn;
-	waveInOpen(&waveIn, WAVE_MAPPER, &pcmWaveFormat, (DWORD_PTR)waveInProc, (DWORD_PTR)&sock, CALLBACK_FUNCTION);
 
 	// Call request
 	if (init) {

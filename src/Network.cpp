@@ -28,7 +28,7 @@ void Network::connection()
 				while (len != MAX_TEXT_W * 2) {
 					int tmp_len = recv(sock, (char*)(cipher + len), sizeof(cipher) - len, 0);
 					if (tmp_len <= 0) {
-						sock = INVALID_SOCKET;
+						disconnect();
 						break;
 					}
 					len += tmp_len;
@@ -39,7 +39,7 @@ void Network::connection()
 				appendTextW(hwnd_msg, L"\r\n!!!AES decryption failed...");
 				continue;
 			}
-			if (mode == 1 || (len == 2 && data[0] == 0)) {
+			if (mode == 1 || mode == 2) {
 				// Receive command
 				if (data[0] == 0)
 					recv_cmd(data);
@@ -48,7 +48,7 @@ void Network::connection()
 					recv_text(data);
 			}
 			// File transfer
-			else if (mode == 2)
+			else if (mode == 3)
 				recv_file(data);
 		}
 		else
@@ -160,13 +160,12 @@ void Network::recv_cmd(BYTE* cmd)
 {
 	// File info
 	if (cmd[1] == 1) {
-		file = new FileTransfer;
-		file->load_fileinfo((FileInfo*)cmd);
+		file.load_fileinfo((FileInfo*)cmd);
 		if (!recv_fileinfo()) {
+			appendTextW(hwnd_msg, L"\r\n!!!File rejected...");
 			BYTE cmd[2] = { 0, 3 };
 			send_data(cmd, 2);
-			delete file;
-			file = nullptr;
+			file.cleanup();
 		}
 	}
 	// File ready to send
@@ -189,18 +188,17 @@ void Network::recv_file(BYTE* data)
 {
 	// Handle AES padding
 	if (count < 2) {
-		file->write_file(data, file->fileinfo.filesize);
+		file.write_file(data, file.fileinfo.filesize);
 		appendTextW(hwnd_msg, L"\r\n!!!Done transfer!!!");
-		delete file;
-		file = nullptr;
+		file.cleanup();
 		occupy = false;
 		mode = 1;
 		return;
 	}
 	count--;
 
-	file->fileinfo.filesize -= MAX_TEXT_W * 2 - 1;
-	file->write_file(data, MAX_TEXT_W * 2 - 1);
+	file.fileinfo.filesize -= MAX_TEXT_W * 2 - 1;
+	file.write_file(data, MAX_TEXT_W * 2 - 1);
 
 	if (count % (1024 * 1024 / (MAX_TEXT_W * 2 - 1)) == 0)
 		appendTextW(hwnd_msg, L"#");
@@ -210,22 +208,22 @@ bool Network::recv_fileinfo()
 {
 	appendTextW(hwnd_msg, L"\r\n!!!A file is ready to be sent to you!!! Receive it?");
 	appendTextW(hwnd_msg, L"\r\n\tFilename: ");
-	appendTextW(hwnd_msg, file->fileinfo.filename);
+	appendTextW(hwnd_msg, file.fileinfo.filename);
 	appendTextW(hwnd_msg, L"\r\n\tSize: ");
-	appendFilesize(hwnd_msg, file->fileinfo.filesize);
+	appendFilesize(hwnd_msg, file.fileinfo.filesize);
 
 	if (MessageBoxW(hwnd, L"Receive it?", L"Transmitter", MB_YESNO | MB_DEFBUTTON2) == IDNO)
 		return false;
 
 	// Initialize savepath
-	if (!file->save_file(hwnd))
+	if (!file.save_file(hwnd))
 		return false;
 	BYTE cmd[2] = { 0, 2 };
 	send_data(cmd, 2);
 
 	occupy = true;
-	mode = 2;
-	count = file->fileinfo.filesize % (MAX_TEXT_W * 2 - 1) == 0 ? file->fileinfo.filesize / (MAX_TEXT_W * 2 - 1) : file->fileinfo.filesize / (MAX_TEXT_W * 2 - 1) + 1;
+	mode = 3;
+	count = file.fileinfo.filesize % (MAX_TEXT_W * 2 - 1) == 0 ? file.fileinfo.filesize / (MAX_TEXT_W * 2 - 1) : file.fileinfo.filesize / (MAX_TEXT_W * 2 - 1) + 1;
 
 	appendTextW(hwnd_msg, L"\r\nStart receiving...(# -> 1MB)\r\n");
 	return true;
@@ -282,17 +280,16 @@ void Network::send_text(WCHAR* text, int len)
 
 void Network::send_file()
 {
-	file = new FileTransfer;
-	if (!file->open_file(hwnd))
+	if (!file.open_file(hwnd))
 		return;
 
 	// Send file info
-	send_data((BYTE*)&file->fileinfo, sizeof(FileInfo));
+	send_data((BYTE*)&file.fileinfo, sizeof(FileInfo));
 	appendTextW(hwnd_msg, L"\r\n!!!You tried to send a file!!! Waiting for response...");
 	appendTextW(hwnd_msg, L"\r\n\tFilename: ");
-	appendTextW(hwnd_msg, file->fileinfo.filename);
+	appendTextW(hwnd_msg, file.fileinfo.filename);
 	appendTextW(hwnd_msg, L"\r\n\tSize: ");
-	appendFilesize(hwnd_msg, file->fileinfo.filesize);
+	appendFilesize(hwnd_msg, file.fileinfo.filesize);
 	mode = 2;
 
 	// Wait for response for 50 sec
@@ -301,12 +298,12 @@ void Network::send_file()
 		Sleep(500);
 		if (occupy == true)
 			break;
-		if (mode != 2) {
-			appendTextW(hwnd_msg, L"\r\nFile rejected...");
+		if (mode == 1) {
+			appendTextW(hwnd_msg, L"\r\n!!!File rejected...");
 			return;
 		}
 		if (timeout > 100) {
-			appendTextW(hwnd_msg, L"\r\nFile time out...");
+			appendTextW(hwnd_msg, L"\r\n!!!File time out...");
 			mode = 1;
 			return;
 		}
@@ -322,13 +319,12 @@ void Network::send_file()
 	do {
 		memset(data, 0, sizeof(data));
 
-		byteread = file->read_file(data, sizeof(data));
+		byteread = file.read_file(data, sizeof(data));
 		send_data(data, sizeof(data));
 
 		if (mode != 2) {
 			appendTextW(hwnd_msg, L"\r\n!!!Transfer failed!!!");
-			delete file;
-			file = nullptr;
+			file.cleanup();
 			return;
 		}
 
@@ -339,8 +335,7 @@ void Network::send_file()
 	} while (byteread == sizeof(data));
 
 	appendTextW(hwnd_msg, L"\r\n!!!Done transfer!!!");
-	delete file;
-	file = nullptr;
+	file.cleanup();
 	occupy = false;
 	mode = 1;
 }
@@ -353,18 +348,10 @@ void Network::disconnect()
 {
 	mode = 0;
 	occupy = false;
-	delete file;
-	file = nullptr;
+	file.cleanup();
 	key.Cleanup();
 	closesocket(sock);
 	sock = INVALID_SOCKET;
 	appendTextW(hwnd_msg, L"\r\n!!!Connection stopped...");
 	EnableWindow(hwnd_clnt, true);
 }
-
-Network::~Network() {
-	delete file;
-	file = nullptr;
-}
-
-

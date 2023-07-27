@@ -1,70 +1,11 @@
 #pragma once
 
-
-
-bool Recv_file(HWND& hwnd, FileInfo* file_info) {
-
-
-
-	BYTE cipher[MAX_TEXT_W * 2];
-	BYTE data[MAX_TEXT_W * 2 - 1];
-	int len;
-	int count = 0;
-	for (DWORD i = 0; i < file_info->filesize; i += MAX_TEXT_W * 2 - 1) {
-		memset(cipher, 0, sizeof(cipher));
-		memset(data, 0, sizeof(data));
-
-		len = recv(sock, (char*)cipher, sizeof(cipher), 0);
-		while (len != sizeof(cipher)) {
-			int tmp_len = recv(sock, (char*)(cipher + len), sizeof(cipher) - len, 0);
-			if (tmp_len <= 0)
-				break;
-			len += tmp_len;
-		}
-		if (AES_decrypt(G_hwnd_key, cipher, sizeof(cipher), data, sizeof(data)) == 0) {
-			appendTextW(hwnd_msg, L"\r\n!!!Transfer Error!!!");
-			CloseHandle(file);
-			CONNECTION = sock;
-			return true;
-		}
-
-		// Manage AES padding
-		int lastbyte = sizeof(data);
-		if (i > file_info->filesize - (MAX_TEXT_W * 2 - 1))
-			lastbyte = file_info->filesize - i;
-		WriteFile(file, data, lastbyte, NULL, NULL);
-
-		count++;
-		if (count % (MAX_TEXT_W * 2 + 1) == 0)
-			appendTextW(hwnd_msg, L"#");
-	}
-	
-
-	// Close handle
-	CloseHandle(file);
-	CONNECTION = sock;
-	return true;
-}
-
-
 void audioTransfer(HWND hwnd, bool init, SOCKET sock);
-void waveOutProc(HWAVEOUT waveOut, UINT message, DWORD_PTR dwInstance, DWORD_PTR waveOutHeader, DWORD_PTR dwParam2);
+
 bool Recv_call(HWND& hwnd, bool init) {
-	HWND hwnd_msg = GetDlgItem(hwnd, MSGBOX_ID);
 
-	// Audio format
-	WAVEFORMATEX pcmWaveFormat{};
-	pcmWaveFormat.wFormatTag = WAVE_FORMAT_PCM;
-	pcmWaveFormat.nChannels = 1;
-	pcmWaveFormat.nSamplesPerSec = 8000;
-	pcmWaveFormat.nAvgBytesPerSec = 8000;
-	pcmWaveFormat.nBlockAlign = 1;
-	pcmWaveFormat.wBitsPerSample = 8;
-	pcmWaveFormat.cbSize = 0;
 
-	// Set up speaker
-	HWAVEOUT waveOut;
-	waveOutOpen(&waveOut, WAVE_MAPPER, &pcmWaveFormat, (DWORD_PTR)waveOutProc, NULL, CALLBACK_FUNCTION);
+	
 
 	// Set up audio buffer 
 	BYTE* waveOutBuffer[AUDIO_BUFFER / 2]{};

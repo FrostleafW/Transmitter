@@ -131,6 +131,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\AudioTransfer.cpp" />
     <ClCompile Include="src\FileTransfer.cpp" />
     <ClCompile Include="src\Encryption.cpp" />
     <ClCompile Include="src\misc.cpp" />
@@ -138,6 +139,7 @@
     <ClCompile Include="src\Transmitter.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\AudioTransfer.h" />
     <ClInclude Include="src\FileTransfer.h" />
     <ClInclude Include="src\Encryption.h" />
     <ClInclude Include="src\misc.h" />

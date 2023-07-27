@@ -1,5 +1,4 @@
-#include <Windows.h>
-#include "misc.h"
+#include <winsock2.h>
 #include "FileTransfer.h"
 
 bool FileTransfer::open_file(HWND hwnd)
@@ -66,7 +65,11 @@ bool FileTransfer::write_file(BYTE* data, int len)
 	return WriteFile(file, data, len, NULL, NULL);
 }
 
-FileTransfer::~FileTransfer()
+void FileTransfer::cleanup()
 {
 	CloseHandle(file);
+	file = NULL;
+	memset(filepath, 0, sizeof(filepath));
+	fileinfo.filesize = 0;
+	memset(fileinfo.filename, 0, sizeof(fileinfo.filename));
 }

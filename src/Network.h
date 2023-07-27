@@ -5,12 +5,12 @@
 class Network
 {
 	SOCKET sock = INVALID_SOCKET;
-	int mode = 0; // 0: No connection; 1: Text; 2: File;
+	int mode = 0; // 0: No connection; 1: Text; 2: Send file; 3: Receive file;
 	bool occupy = false;
 	unsigned int count = 0;
 
 	Encryption key;
-	FileTransfer* file = nullptr;
+	FileTransfer file;
 
 	HWND hwnd = NULL;
 	HWND hwnd_msg = NULL;
@@ -32,6 +32,5 @@ public:
 	void send_file();
 	void send_audio(char* audio, int len);
 	void disconnect();
-	~Network();
 };
 

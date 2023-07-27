@@ -19,6 +19,6 @@ public:
 	void load_fileinfo(FileInfo* fileinfo);
 	DWORD read_file(BYTE* data, int len);
 	bool write_file(BYTE* data, int len);
-	~FileTransfer();
+	void cleanup();
 };
 

@@ -24,9 +24,9 @@ void* thread_run(void* arg)
 		}
 		else if(_s == 0)
 		{
-			printf("Client closed...\n");
 			close(fd[0]);
 			close(fd[1]);
+			printf("Client closed...\n");
 			break;
 		}
 		else
@@ -131,7 +131,5 @@ int main(int argc, char* argv[])
 		}
 	}
 	
-	close(fd[0]);
-	close(fd[1]);
 	return 0;
 }
