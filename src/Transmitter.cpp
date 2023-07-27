@@ -15,8 +15,8 @@ Network conn;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nShowCmd)
 {
-	//AllocConsole();
-	//freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
+	AllocConsole();
+	freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
 
 	// Register window class
 	const WCHAR Class_Name[] = L"Transmitter";
@@ -178,13 +178,15 @@ void callbackWidgets(HWND hwnd, int id) {
 		}
 		break;
 	}
-	//case BTN_CALL_ID:
-	//{
-	//	// Call Btn
-	//	if (CONNECTION != INVALID_SOCKET && SEND_MODE == 1)
-	//		Btn_call(hwnd);
-	//	break;
-	//}
+	case BTN_CALL_ID:
+	{
+		// Call Btn
+		if (conn.is_connected()) {
+			std::thread audio_thread([&] {conn.send_audio(); });
+			audio_thread.detach();
+		}
+		break;
+	}
 	}
 }
 

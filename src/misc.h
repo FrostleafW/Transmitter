@@ -14,8 +14,6 @@
 #define AES_PADDING 16
 #define MAX_TEXT_W 1024
 
-#define AUDIO_BUFFER 16
-
 #define DEFAULT_PORT 17010
 
 void appendTextW(HWND& hwnd_msg, const WCHAR* buffer);

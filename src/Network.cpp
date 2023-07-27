@@ -39,7 +39,7 @@ void Network::connection()
 				appendTextW(hwnd_msg, L"\r\n!!!AES decryption failed...");
 				continue;
 			}
-			if (mode == 1 || mode == 2) {
+			if (mode == 1 || mode == 2 || mode == 4 || (mode == 5 && len == 2)) {
 				// Receive command
 				if (data[0] == 0)
 					recv_cmd(data);
@@ -50,6 +50,9 @@ void Network::connection()
 			// File transfer
 			else if (mode == 3)
 				recv_file(data);
+			// Audio transfer
+			else if (mode == 5)
+				recv_audio(data);
 		}
 		else
 		{
@@ -144,18 +147,6 @@ bool Network::connect_encrypt()
 	return true;
 }
 
-void Network::send_data(BYTE* data, int len)
-{
-	if (len >= MAX_TEXT_W * 2) {
-		appendTextW(hwnd_msg, L"\r\n!!!Sending data too long...");
-		return;
-	}
-	BYTE* cipher = new BYTE[len + AES_PADDING];
-	len = key.AES_encrypt(data, len, cipher, len + AES_PADDING);
-	send(sock, (char*)cipher, len, 0);
-	delete[] cipher;
-}
-
 void Network::recv_cmd(BYTE* cmd)
 {
 	// File info
@@ -174,6 +165,22 @@ void Network::recv_cmd(BYTE* cmd)
 	}
 	// File fail to send
 	else if (cmd[1] == 3) {
+		mode = 1;
+	}
+	// Voice call request
+	else if (cmd[1] == 4) {
+		if (!recv_call()) {
+			appendTextW(hwnd_msg, L"\r\n!!!Voice call rejected...");
+			BYTE cmd[2] = { 0, 6 };
+			send_data(cmd, 2);
+		}
+	}
+	// Voice call accepted
+	else if (cmd[1] == 5) {
+		occupy = true;
+	}
+	// Voice call rejected
+	else if (cmd[1] == 6) {
 		mode = 1;
 	}
 }
@@ -204,6 +211,11 @@ void Network::recv_file(BYTE* data)
 		appendTextW(hwnd_msg, L"#");
 }
 
+void Network::recv_audio(BYTE* data)
+{
+	audio.audioOut(data, count);
+}
+
 bool Network::recv_fileinfo()
 {
 	appendTextW(hwnd_msg, L"\r\n!!!A file is ready to be sent to you!!! Receive it?");
@@ -226,6 +238,31 @@ bool Network::recv_fileinfo()
 	count = file.fileinfo.filesize % (MAX_TEXT_W * 2 - 1) == 0 ? file.fileinfo.filesize / (MAX_TEXT_W * 2 - 1) : file.fileinfo.filesize / (MAX_TEXT_W * 2 - 1) + 1;
 
 	appendTextW(hwnd_msg, L"\r\nStart receiving...(# -> 1MB)\r\n");
+	return true;
+}
+
+bool Network::recv_call()
+{
+	// Receive voice call request
+	appendTextW(hwnd_msg, L"\r\n!!!The other side wants to start a voice call!!!");
+	if (MessageBoxW(hwnd, L"Start voice call?", L"Transmitter", MB_YESNO | MB_DEFBUTTON2) == IDNO || !audio.start(hwnd, this))
+		return false;
+
+	// Send back acceptance
+	appendTextW(hwnd_msg, L"\r\n!!!Voice call accepted...");
+	BYTE cmd[2] = { 0, 5 };
+	send_data(cmd, 2);
+	Sleep(500);
+
+	occupy = true;
+	mode = 5;
+	audio.setupBuffer();
+	count = 0;
+
+	// Start sending audio
+	std::thread audio_thread([&] {audio.audioInStart(mode); });
+	audio_thread.detach();
+
 	return true;
 }
 
@@ -271,6 +308,18 @@ bool Network::connect_to(WCHAR* ip, unsigned short port)
 	return true;
 }
 
+void Network::send_data(BYTE* data, int len)
+{
+	if (len >= MAX_TEXT_W * 2) {
+		appendTextW(hwnd_msg, L"\r\n!!!Sending data too long...");
+		return;
+	}
+	BYTE* cipher = new BYTE[len + AES_PADDING];
+	len = key.AES_encrypt(data, len, cipher, len + AES_PADDING);
+	send(sock, (char*)cipher, len, 0);
+	delete[] cipher;
+}
+
 void Network::send_text(WCHAR* text, int len)
 {
 	appendTextW(hwnd_msg, L"\r\n< ");
@@ -303,7 +352,7 @@ void Network::send_file()
 			return;
 		}
 		if (timeout > 100) {
-			appendTextW(hwnd_msg, L"\r\n!!!File time out...");
+			appendTextW(hwnd_msg, L"\r\n!!!Request time out...");
 			mode = 1;
 			return;
 		}
@@ -340,14 +389,49 @@ void Network::send_file()
 	mode = 1;
 }
 
-void Network::send_audio(char* audio, int len)
+void Network::send_audio()
 {
+	if (!audio.start(hwnd, this))
+		return;
+
+	// Send voice call request
+	BYTE cmd[2] = { 0, 4 };
+	send_data(cmd, 2);
+	appendTextW(hwnd_msg, L"\r\n!!!Voice call request sent!!! Waiting for response...");
+	mode = 4;
+
+	// Wait for response for 50 sec
+	int timeout = 0;
+	while (true) {
+		Sleep(500);
+		if (occupy == true)
+			break;
+		if (mode == 1) {
+			appendTextW(hwnd_msg, L"\r\n!!!Voice call rejected...");
+			return;
+		}
+		if (timeout > 100) {
+			appendTextW(hwnd_msg, L"\r\n!!!Request time out...");
+			mode = 1;
+			return;
+		}
+		timeout++;
+	}
+	mode = 5;
+	audio.setupBuffer();
+	count = 0;
+
+	// Start sending audio
+	appendTextW(hwnd_msg, L"\r\n!!!Voice call connected!!!");
+	audio.audioInStart(mode);
+
+	audio.cleanup();
 }
 
 void Network::disconnect()
 {
-	mode = 0;
 	occupy = false;
+	mode = 0;
 	file.cleanup();
 	key.Cleanup();
 	closesocket(sock);
