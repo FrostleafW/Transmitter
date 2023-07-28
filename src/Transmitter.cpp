@@ -136,7 +136,6 @@ void createWidgets(HWND hwnd) {
 
 	// Set Textbox callback
 	TextboxProc = (WNDPROC)SetWindowLongPtr(TEXTBOX, GWLP_WNDPROC, (LONG_PTR)callbackTextbox);
-
 }
 
 void callbackWidgets(HWND hwnd, int id) {

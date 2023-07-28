@@ -93,7 +93,7 @@ void AudioTransfer::audioInStart(int& mode)
 {
 	waveInStart(waveIn);
 	while (mode == 5) {
-		Sleep(1000);
+		Sleep(500);
 	}
 		
 	waveInStop(waveIn);

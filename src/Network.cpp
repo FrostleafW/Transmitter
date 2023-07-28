@@ -39,7 +39,7 @@ void Network::connection()
 				appendTextW(hwnd_msg, L"\r\n!!!AES decryption failed...");
 				continue;
 			}
-			if (mode == 1 || mode == 2 || mode == 4 || (mode == 5 && len == 2)) {
+			if (mode == 1 || mode == 2 || mode == 4 || (data[0] == 0 && data[2] == 0 && mode == 5)) {
 				// Receive command
 				if (data[0] == 0)
 					recv_cmd(data);
@@ -183,6 +183,12 @@ void Network::recv_cmd(BYTE* cmd)
 	else if (cmd[1] == 6) {
 		mode = 1;
 	}
+	// Voice call hang up
+	else if (cmd[1] == 7) {
+		occupy = false;
+		mode = 1;
+		SetWindowTextW(hwnd_call, L"Call");
+	}
 }
 
 void Network::recv_text(BYTE* text)
@@ -254,8 +260,10 @@ bool Network::recv_call()
 	send_data(cmd, 2);
 	Sleep(500);
 
+	// Set up variables
 	occupy = true;
 	mode = 5;
+	SetWindowTextW(hwnd_call, L"Hang Up");
 	audio.setupBuffer();
 	count = 0;
 
@@ -271,6 +279,7 @@ void Network::passHandle(HWND hwnd)
 	this->hwnd = hwnd;
 	this->hwnd_msg = GetDlgItem(hwnd, MSGBOX_ID);
 	this->hwnd_clnt = GetDlgItem(hwnd, BTN_CLNT_ID);
+	this->hwnd_call = GetDlgItem(hwnd, BTN_CALL_ID);
 }
 
 bool Network::is_connected()
@@ -417,7 +426,10 @@ void Network::send_audio()
 		}
 		timeout++;
 	}
+
+	// Set up variables
 	mode = 5;
+	SetWindowTextW(hwnd_call, L"Hang Up");
 	audio.setupBuffer();
 	count = 0;
 
@@ -426,6 +438,22 @@ void Network::send_audio()
 	audio.audioInStart(mode);
 
 	audio.cleanup();
+}
+
+
+void Network::hangup_audio()
+{
+	if (mode == 5) {
+		occupy = false;
+		BYTE cmd[MAX_TEXT_W * 2 - 1]{};
+		cmd[1] = 7;
+		send_data(cmd, sizeof(cmd));
+
+		// Wait for cmd arrive
+		Sleep(500);
+		mode = 1;
+		SetWindowTextW(hwnd_call, L"Call");
+	}
 }
 
 void Network::disconnect()
@@ -439,3 +467,4 @@ void Network::disconnect()
 	appendTextW(hwnd_msg, L"\r\n!!!Connection stopped...");
 	EnableWindow(hwnd_clnt, true);
 }
+

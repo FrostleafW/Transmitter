@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <winsock2.h>
 #pragma comment(lib, "bcrypt.lib")
+
 #include "Encryption.h"
 
 Encryption::Encryption() {

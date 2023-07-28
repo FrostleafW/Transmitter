@@ -6,7 +6,7 @@
 class Network
 {
 	SOCKET sock = INVALID_SOCKET;
-	int mode = 0; // 0: No connection; 1: Text; 2: Send file; 3: Receive file; 4: Call request; 5: Call accept
+	int mode = 0; // 0: No connection; 1: Text; 2: Send file; 3: Receive file; 4: Call request; 5: Call accept; 6: Call reject; 7: Call hang up
 	bool occupy = false;
 	unsigned int count = 0;
 
@@ -17,6 +17,7 @@ class Network
 	HWND hwnd = NULL;
 	HWND hwnd_msg = NULL;
 	HWND hwnd_clnt = NULL;
+	HWND hwnd_call = NULL;
 
 	void connection();
 	bool connect_encrypt();
@@ -35,6 +36,7 @@ public:
 	void send_text(WCHAR* text, int len);
 	void send_file();
 	void send_audio();
+	void hangup_audio();
 	void disconnect();
 
 };
