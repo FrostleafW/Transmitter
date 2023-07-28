@@ -14,8 +14,8 @@ Network conn;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nShowCmd)
 {
-	//AllocConsole();
-	//freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
+	AllocConsole();
+	freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
 
 	// Register window class
 	const WCHAR Class_Name[] = L"Transmitter";
@@ -86,6 +86,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 	}
 	case WM_DESTROY:
 	{
+		conn.disconnect();
 		WSACleanup();
 		PostQuitMessage(0);
 		break;
@@ -182,6 +183,9 @@ void callbackWidgets(HWND hwnd, int id) {
 		if (conn.is_connected()) {
 			std::thread audio_thread([&] {conn.send_audio(); });
 			audio_thread.detach();
+		}
+		else {
+			conn.hangup_audio();
 		}
 		break;
 	}
