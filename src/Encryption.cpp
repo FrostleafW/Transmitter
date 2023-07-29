@@ -142,7 +142,7 @@ unsigned long Encryption::RSA_decrypt(BYTE* cipher, int cipher_len, BYTE* text, 
 	return len;
 }
 
-void Encryption::Cleanup()
+void Encryption::cleanup()
 {
 	BCryptDestroyKey(hwnd_key);
 	BCryptCloseAlgorithmProvider(hwnd_alg, NULL);
@@ -151,5 +151,5 @@ void Encryption::Cleanup()
 }
 
 Encryption::~Encryption() {
-	Cleanup();
+	cleanup();
 }

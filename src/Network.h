@@ -17,6 +17,8 @@ class Network
 	HWND hwnd = NULL;
 	HWND hwnd_msg = NULL;
 	HWND hwnd_clnt = NULL;
+	HWND hwnd_send = NULL;
+	HWND hwnd_file = NULL;
 	HWND hwnd_call = NULL;
 
 	void connection();

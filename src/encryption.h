@@ -16,6 +16,6 @@ public:
 	unsigned long RSA_exportPublic(BYTE* public_key, int key_len);
 	unsigned long RSA_encrypt(BYTE* text, int text_len, BYTE* cipher, int cipher_len);
 	unsigned long RSA_decrypt(BYTE* cipher, int cipher_len, BYTE* text, int text_len);
-	void Cleanup();
+	void cleanup();
 	~Encryption();
 };

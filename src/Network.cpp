@@ -14,6 +14,10 @@ void Network::connection()
 		return;
 	}
 
+	EnableWindow(hwnd_send, true);
+	EnableWindow(hwnd_file, true);
+	EnableWindow(hwnd_call, true);
+
 	mode = 1;
 	BYTE cipher[MAX_TEXT_W * 2];
 	BYTE data[MAX_TEXT_W * 2];
@@ -24,15 +28,13 @@ void Network::connection()
 		len = recv(sock, (char*)cipher, sizeof(cipher), 0);
 		if (len > 0)
 		{
-			if (occupy) {
-				while (len != MAX_TEXT_W * 2) {
-					int tmp_len = recv(sock, (char*)(cipher + len), sizeof(cipher) - len, 0);
-					if (tmp_len <= 0) {
-						disconnect();
-						break;
-					}
-					len += tmp_len;
+			while (occupy && len != MAX_TEXT_W * 2) {
+				int tmp_len = recv(sock, (char*)(cipher + len), sizeof(cipher) - len, 0);
+				if (tmp_len <= 0) {
+					disconnect();
+					break;
 				}
+				len += tmp_len;
 			}
 			len = key.AES_decrypt(cipher, len, data, sizeof(data));
 			if (len == 0) {
@@ -60,7 +62,7 @@ void Network::connection()
 			break;
 		}
 	}
-	key.Cleanup();
+	key.cleanup();
 
 }
 
@@ -98,7 +100,7 @@ bool Network::connect_encrypt()
 				return false;
 
 			// Destory RSA handle
-			key.Cleanup();
+			key.cleanup();
 
 			// Set up AES handle
 			if (key.AES_construct(AES_key, sizeof(AES_key)))
@@ -135,7 +137,7 @@ bool Network::connect_encrypt()
 			return false;
 
 		// Destory RSA handle
-		key.Cleanup();
+		key.cleanup();
 
 		// Set up AES handle
 		if (key.AES_construct(AES_key, sizeof(AES_key)))
@@ -279,6 +281,8 @@ void Network::passHandle(HWND hwnd)
 	this->hwnd = hwnd;
 	this->hwnd_msg = GetDlgItem(hwnd, MSGBOX_ID);
 	this->hwnd_clnt = GetDlgItem(hwnd, BTN_CLNT_ID);
+	HWND hwnd_send = GetDlgItem(hwnd, BTN_SEND_ID);
+	HWND hwnd_file = GetDlgItem(hwnd, BTN_FILE_ID);
 	this->hwnd_call = GetDlgItem(hwnd, BTN_CALL_ID);
 }
 
@@ -368,6 +372,9 @@ void Network::send_file()
 		timeout++;
 	}
 
+	EnableWindow(hwnd_send, false);
+	EnableWindow(hwnd_file, false);
+	EnableWindow(hwnd_call, false);
 	appendTextW(hwnd_msg, L"\r\nStart transferring...(# -> 1MB)\r\n");
 
 	// Start sending file
@@ -393,6 +400,9 @@ void Network::send_file()
 	} while (byteread == sizeof(data));
 
 	appendTextW(hwnd_msg, L"\r\n!!!Done transfer!!!");
+	EnableWindow(hwnd_send, true);
+	EnableWindow(hwnd_file, true);
+	EnableWindow(hwnd_call, true);
 	file.cleanup();
 	occupy = false;
 	mode = 1;
@@ -451,7 +461,7 @@ void Network::hangup_audio()
 		send_data(cmd, sizeof(cmd));
 
 		// Wait for cmd arrive
-		Sleep(500);
+		Sleep(1000);
 		occupy = false;
 		mode = 1;
 		SetWindowTextW(hwnd_call, L"Call");
@@ -463,7 +473,8 @@ void Network::disconnect()
 	occupy = false;
 	mode = 0;
 	file.cleanup();
-	key.Cleanup();
+	audio.cleanup();
+	key.cleanup();
 	closesocket(sock);
 	sock = INVALID_SOCKET;
 	appendTextW(hwnd_msg, L"\r\n!!!Connection stopped...");

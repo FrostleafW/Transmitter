@@ -91,6 +91,11 @@ void AudioTransfer::setupBuffer() {
 
 void AudioTransfer::audioInStart(int& mode)
 {
+	HWND hwnd_send = GetDlgItem(hwnd, BTN_SEND_ID);
+	HWND hwnd_file = GetDlgItem(hwnd, BTN_FILE_ID);
+	EnableWindow(hwnd_send, false);
+	EnableWindow(hwnd_file, false);
+
 	waveInStart(waveIn);
 	while (mode == 5) {
 		Sleep(500);
@@ -98,6 +103,8 @@ void AudioTransfer::audioInStart(int& mode)
 		
 	waveInStop(waveIn);
 	appendTextW(hwnd_msg, L"\r\n!!!Voice call disconnected!!!");
+	EnableWindow(hwnd_send, true);
+	EnableWindow(hwnd_file, true);
 }
 
 void AudioTransfer::audioOut(BYTE* data, unsigned int& count)
