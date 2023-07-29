@@ -208,6 +208,9 @@ void Network::recv_file(BYTE* data)
 		file.cleanup();
 		occupy = false;
 		mode = 1;
+		EnableWindow(hwnd_send, true);
+		EnableWindow(hwnd_file, true);
+		EnableWindow(hwnd_call, true);
 		return;
 	}
 	count--;
@@ -246,6 +249,9 @@ bool Network::recv_fileinfo()
 	count = file.fileinfo.filesize % (MAX_TEXT_W * 2 - 1) == 0 ? file.fileinfo.filesize / (MAX_TEXT_W * 2 - 1) : file.fileinfo.filesize / (MAX_TEXT_W * 2 - 1) + 1;
 
 	appendTextW(hwnd_msg, L"\r\nStart receiving...(# -> 1MB)\r\n");
+	EnableWindow(hwnd_send, false);
+	EnableWindow(hwnd_file, false);
+	EnableWindow(hwnd_call, false);
 	return true;
 }
 
@@ -281,8 +287,8 @@ void Network::passHandle(HWND hwnd)
 	this->hwnd = hwnd;
 	this->hwnd_msg = GetDlgItem(hwnd, MSGBOX_ID);
 	this->hwnd_clnt = GetDlgItem(hwnd, BTN_CLNT_ID);
-	HWND hwnd_send = GetDlgItem(hwnd, BTN_SEND_ID);
-	HWND hwnd_file = GetDlgItem(hwnd, BTN_FILE_ID);
+	this->hwnd_send = GetDlgItem(hwnd, BTN_SEND_ID);
+	this->hwnd_file = GetDlgItem(hwnd, BTN_FILE_ID);
 	this->hwnd_call = GetDlgItem(hwnd, BTN_CALL_ID);
 }
 
@@ -400,12 +406,12 @@ void Network::send_file()
 	} while (byteread == sizeof(data));
 
 	appendTextW(hwnd_msg, L"\r\n!!!Done transfer!!!");
-	EnableWindow(hwnd_send, true);
-	EnableWindow(hwnd_file, true);
-	EnableWindow(hwnd_call, true);
 	file.cleanup();
 	occupy = false;
 	mode = 1;
+	EnableWindow(hwnd_send, true);
+	EnableWindow(hwnd_file, true);
+	EnableWindow(hwnd_call, true);
 }
 
 void Network::send_audio()
