@@ -485,5 +485,8 @@ void Network::disconnect()
 	sock = INVALID_SOCKET;
 	appendTextW(hwnd_msg, L"\r\n!!!Connection stopped...");
 	EnableWindow(hwnd_clnt, true);
+	EnableWindow(hwnd_send, false);
+	EnableWindow(hwnd_file, false);
+	EnableWindow(hwnd_call, false);
 }
 

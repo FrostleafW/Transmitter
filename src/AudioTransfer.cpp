@@ -1,6 +1,4 @@
-#include <winsock2.h>
-
-#include <stdio.h>
+#include <windows.h>
 
 #include "misc.h"
 #include "Network.h"

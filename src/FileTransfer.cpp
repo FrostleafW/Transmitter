@@ -1,4 +1,4 @@
-#include <winsock2.h>
+#include <windows.h>
 #include "FileTransfer.h"
 
 bool FileTransfer::open_file(HWND hwnd)

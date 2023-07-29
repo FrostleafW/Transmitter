@@ -1,6 +1,6 @@
 #include <time.h>
 #include <stdio.h>
-#include <winsock2.h>
+#include <windows.h>
 #pragma comment(lib, "bcrypt.lib")
 
 #include "Encryption.h"
