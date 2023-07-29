@@ -51,7 +51,7 @@ void Network::connection()
 			else if (mode == 3)
 				recv_file(data);
 			// Audio transfer
-			else if (mode == 5)
+			else if (mode == 5 || mode == 7)
 				recv_audio(data);
 		}
 		else
@@ -440,17 +440,19 @@ void Network::send_audio()
 	audio.cleanup();
 }
 
-
 void Network::hangup_audio()
 {
 	if (mode == 5) {
-		occupy = false;
+		mode = 7;
+		// Wait for waveIn stops
+		Sleep(500);
 		BYTE cmd[MAX_TEXT_W * 2 - 1]{};
 		cmd[1] = 7;
 		send_data(cmd, sizeof(cmd));
 
 		// Wait for cmd arrive
 		Sleep(500);
+		occupy = false;
 		mode = 1;
 		SetWindowTextW(hwnd_call, L"Call");
 	}

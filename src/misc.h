@@ -12,7 +12,7 @@
 
 // Text length limit
 #define AES_PADDING 16
-#define MAX_TEXT_W 1024
+#define MAX_TEXT_W 512
 
 #define DEFAULT_PORT 17010
 

@@ -2,7 +2,7 @@
 
 class AudioTransfer
 {
-	static const short numBuffer = 16;
+	static const short numBuffer = 24;
 
 	HWAVEIN waveIn = NULL;
 	HWAVEOUT waveOut = NULL;
